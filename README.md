@@ -97,3 +97,122 @@ Create a ```GET``` endpoint that retrieves all providers by their specialty
 
 
 ## NOTE: Do not fork this repository
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const express = require('express');
+const mysql = require('mysql');
+const app = express();
+
+// Create MySQL connection 
+const db = mysql.createConnection({
+  host: '3306',
+  user: 'eazy  med',
+  password: 'eazymes188', 
+  database: 'hospital_db'
+});
+
+// Connect to the database
+db.connect((err) => {
+  if (err) {
+    console.error('Error connecting to the database: ', err);
+    process.exit(1);
+  } else {
+    console.log('Connected to the database');
+  }
+});
+
+// 1. Retrieve all patients
+app.get('/patients', (req, res) => {
+  const query = 'SELECT patient_id, first_name, last_name, date_of_birth FROM patients';
+  
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error('Error fetching patients: ', err);
+      res.status(500).json({ error: 'Database query failed' });
+    } else {
+      res.status(200).json(results);
+    }
+  });
+});
+
+// 2. Retrieve all providers
+app.get('/providers', (req, res) => {
+  const query = 'SELECT first_name, last_name, provider_specialty FROM providers';
+  
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error('Error fetching providers: ', err);
+      res.status(500).json({ error: 'Database query failed' });
+    } else {
+      res.status(200).json(results);
+    }
+  });
+});
+
+// 3. Filter patients by First Name
+app.get('/patients/:firstName', (req, res) => {
+  const { firstName } = req.params;
+  
+  if (!firstName) {
+    return res.status(400).json({ error: 'First name is required' });
+  }
+
+  const query = 'SELECT patient_id, first_name, last_name, date_of_birth FROM patients WHERE first_name = ?';
+  
+  db.query(query, [firstName], (err, results) => {
+    if (err) {
+      console.error('Error fetching patients by first name: ', err);
+      res.status(500).json({ error: 'Database query failed' });
+    } else {
+      res.status(200).json(results);
+    }
+  });
+});
+
+// 4. Retrieve providers by specialty
+app.get('/providers/:specialty', (req, res) => {
+  const { specialty } = req.params;
+  
+  if (!specialty) {
+    return res.status(400).json({ error: 'Specialty parameter is required' });
+  }
+
+  const query = 'SELECT first_name, last_name, provider_specialty FROM providers WHERE provider_specialty = ?';
+  
+  db.query(query, [specialty], (err, results) => {
+    if (err) {
+      console.error('Error fetching providers by specialty: ', err);
+      res.status(500).json({ error: 'Database query failed' });
+    } else {
+      res.status(200).json(results);
+    }
+  });
+});
+
+//run the server
+const PORT = process.env.PORT || 3306;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${3600}`);
+});
